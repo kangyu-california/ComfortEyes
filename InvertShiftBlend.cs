@@ -481,35 +481,36 @@ namespace InvertShiftBlend
             const int PAD = 8;
 
             // ── Layer A (left) ─────────────────────────────────
-            _layerA = new LayerPanel("Layer A", Color.FromArgb(80, 180, 255), 40, 20, 70);
+            _layerA = new LayerPanel("Layer A", Color.FromArgb(80, 180, 255), 0, 0, 15);
             _layerA.Location = new Point(PAD, PAD);
             Controls.Add(_layerA);
 
             // ── Layer B (right) ────────────────────────────────
-            _layerB = new LayerPanel("Layer B", Color.FromArgb(255, 160, 80), -40, -20, 50);
+            _layerB = new LayerPanel("Layer B", Color.FromArgb(255, 160, 80), 0, 0, 5);
             _layerB.Location = new Point(PAD + _layerA.Width + PAD, PAD);
             Controls.Add(_layerB);
 
-            int rightX = _layerB.Right + PAD;
+            int topY = _layerA.Bottom + 2 * PAD;
+            int rightX = _layerB.Left;
 
             // ── HUD opacity slider ─────────────────────────────
             Controls.Add(new Label
             {
-                Text = "HUD opacity:", Location = new Point(rightX, PAD + 2),
+                Text = "HUD opacity:", Location = new Point(PAD, topY),
                 AutoSize = true, ForeColor = Color.FromArgb(160, 160, 160),
                 BackColor = Color.Transparent,
             });
             _sliderHudAlpha = new TrackBar
             {
-                Minimum = 10, Maximum = 255, Value = 200,
-                Location = new Point(rightX, PAD + 18), Size = new Size(120, 32),
+                Minimum = 0, Maximum = 255, Value = 200,
+                Location = new Point(PAD, topY + 16), Size = new Size(240, 32),
                 TickFrequency = 24, BackColor = Color.FromArgb(22, 22, 26),
             };
             _sliderHudAlpha.ValueChanged += (_, __) => ApplyHudAlpha();
             Controls.Add(_sliderHudAlpha);
             _lblHudAlpha = new Label
             {
-                Text = "78%", Location = new Point(rightX + 124, PAD + 26),
+                Text = "78%", Location = new Point(_sliderHudAlpha.Right + PAD, topY + 16),
                 AutoSize = true, ForeColor = Color.FromArgb(160, 200, 160),
                 Font = new Font("Consolas", 8f),
             };
@@ -518,12 +519,12 @@ namespace InvertShiftBlend
             // ── Interval row ───────────────────────────────────
             Controls.Add(new Label
             {
-                Text = "Interval (ms):", Location = new Point(rightX, PAD + 58),
+                Text = "Interval (ms):", Location = new Point(rightX, topY),
                 AutoSize = true, ForeColor = Color.FromArgb(160, 160, 160),
                 BackColor = Color.Transparent,
             });
             _rowInterval = new ControlRow(this, "", 100, 2000, 500, false,
-                                          rightX - 4, PAD + 72, 120, 4);
+                                          rightX, topY + 16, 240, 4);
             _rowInterval.Slider.ValueChanged += (_, __) =>
             { if (_timer != null) _timer.Interval = _rowInterval.IntValue; };
 
@@ -531,7 +532,7 @@ namespace InvertShiftBlend
             _btnToggle = new Button
             {
                 Text = "▶ Start",
-                Location = new Point(rightX, PAD + 114),
+                Location = new Point(PAD, _rowInterval.Slider.Bottom + PAD),
                 Size = new Size(130, 36),
                 BackColor = Color.FromArgb(0, 125, 55), ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 9f, FontStyle.Bold),
@@ -544,11 +545,11 @@ namespace InvertShiftBlend
             _lblStatus = new Label
             {
                 Text = "Ready",
-                Location = new Point(PAD, _layerA.Bottom + 6),
+                Location = new Point(PAD, _btnToggle.Bottom + 16),
                 Size = new Size(ClientSize.Width - PAD * 2, 18),
                 ForeColor = Color.FromArgb(130, 185, 115),
                 Font = new Font("Consolas", 7.5f),
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
+                //Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
             };
             Controls.Add(_lblStatus);
 
@@ -556,10 +557,10 @@ namespace InvertShiftBlend
             Controls.Add(new Label
             {
                 Text = "HUD opacity → visually transparent but still interactive  |  Overlay passes all mouse & keyboard through",
-                Location = new Point(PAD, _layerA.Bottom + 28),
+                Location = new Point(PAD, _btnToggle.Bottom + 32),
                 Size = new Size(ClientSize.Width - PAD * 2, 14),
                 ForeColor = Color.FromArgb(64, 66, 74), Font = new Font("Segoe UI", 7f),
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
+                //Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
             });
 
             // ── Timer ─────────────────────────────────────────

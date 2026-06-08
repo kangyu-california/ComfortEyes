@@ -431,6 +431,9 @@ namespace InvertShiftBlend
         int  _pipelineBusy = 0;
         System.Windows.Forms.Timer _timer = null!;
 
+        Bitmap shiftA_pipe = null!;
+        Bitmap shiftB_pipe = null!;
+
         public HudForm(OverlayForm overlay)
         {
             _overlay = overlay;
@@ -590,32 +593,49 @@ namespace InvertShiftBlend
 
             Task.Run(() =>
             {
-                Bitmap? desktop = null, crop = null;
+                Bitmap? desktop = null, crop = null, cropB = null;
                 Bitmap? invA = null, shiftA = null;
                 Bitmap? invB = null, shiftB = null;
                 Bitmap? result = null;
                 try
                 {
                     desktop = ScreenCapture.CaptureDesktop();
-                    crop    = ScreenCapture.Crop(desktop, bounds);
+                    crop = ScreenCapture.Crop(desktop, bounds);
+                    cropB = ScreenCapture.Crop(desktop, bounds);
                     desktop.Dispose(); desktop = null;
 
-                    // Layer A
-                    invA   = ImageProcessor.InvertOpaque(crop);
-                    shiftA = ImageProcessor.Shift(invA, pA.Px, pA.Py);
+                    Parallel.Invoke(
+                        () =>
+                        {
+                            // Layer A
+                            invA = ImageProcessor.InvertOpaque(crop);
+                            shiftA = ImageProcessor.Shift(invA, pA.Px, pA.Py);
+                        },
+                        () =>
+                        {
+                            // Layer B (independent invert + shift from same source crop)
+                            invB = ImageProcessor.InvertOpaque(cropB);
+                            shiftB = ImageProcessor.Shift(invB, pB.Px, pB.Py);
+                        },
+                        () =>
+                        {
+                            // Composite: Porter-Duff A over B, each scaled by its alpha
+                            if (shiftA_pipe != null)
+                            {
+                                result = ImageProcessor.CompositeLayers(shiftA_pipe, pA.Alpha, shiftB_pipe, pB.Alpha);
+                            }
+                        }
+                    );
 
-                    // Layer B (independent invert + shift from same source crop)
-                    invB   = ImageProcessor.InvertOpaque(crop);
-                    shiftB = ImageProcessor.Shift(invB, pB.Px, pB.Py);
-
-                    // Composite: Porter-Duff A over B, each scaled by its alpha
-                    result = ImageProcessor.CompositeLayers(shiftA, pA.Alpha, shiftB, pB.Alpha);
+                    shiftA_pipe = shiftA;
+                    shiftB_pipe = shiftB;
 
                     double ms = (DateTime.Now - t0).TotalMilliseconds;
 
                     Invoke(() =>
                     {
-                        _overlay.UpdateBitmap(result);
+                        if (result != null)
+                            _overlay.UpdateBitmap(result);
                         _lblStatus.Text =
                             $"Frame #{frame}  |  {ms:F0} ms  |  {crop.Width}×{crop.Height}  " +
                             $"|  A: px={pA.Px} py={pA.Py} α={pA.Alpha}  " +
@@ -630,8 +650,8 @@ namespace InvertShiftBlend
                 finally
                 {
                     desktop?.Dispose(); crop?.Dispose();
-                    invA?.Dispose(); shiftA?.Dispose();
-                    invB?.Dispose(); shiftB?.Dispose();
+                    invA?.Dispose(); //shiftA?.Dispose();
+                    invB?.Dispose(); //shiftB?.Dispose();
                     result?.Dispose();
                     Interlocked.Exchange(ref _pipelineBusy, 0);
                 }

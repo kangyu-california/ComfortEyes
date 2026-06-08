@@ -614,12 +614,14 @@ namespace InvertShiftBlend
                             // Layer A
                             Bitmap invA = ImageProcessor.InvertOpaque(crop);
                             shiftA = ImageProcessor.Shift(invA, pA.Px, pA.Py);
+                            invA?.Dispose();
                         },
                         () =>
                         {
                             // Layer B (independent invert + shift from same source crop)
                             Bitmap invB = ImageProcessor.InvertOpaque(crop);
                             shiftB = ImageProcessor.Shift(invB, pB.Px, pB.Py);
+                            invB?.Dispose();
                         },
                         () =>
                         {
@@ -653,12 +655,10 @@ namespace InvertShiftBlend
                 }
                 finally
                 {
-                    /*
                     desktop?.Dispose(); crop?.Dispose();
-                    invA?.Dispose(); shiftA?.Dispose();
-                    invB?.Dispose(); shiftB?.Dispose();
+                    //shiftA?.Dispose();
+                    //shiftB?.Dispose();
                     result?.Dispose();
-                    */
                     Interlocked.Exchange(ref _pipelineBusy, 0);
                 }
             });

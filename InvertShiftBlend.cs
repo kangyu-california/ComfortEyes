@@ -103,9 +103,14 @@ namespace InvertShiftBlend
         static Rectangle R(Bitmap b) => new Rectangle(0, 0, b.Width, b.Height);
 
         // Invert RGB, force A=255
+        static Object src_lock = new object();
+
         public static Bitmap InvertOpaque(Bitmap src)
         {
-            var dst = src.Clone(R(src), PixelFormat.Format32bppArgb);
+            Bitmap dst;
+            lock(src_lock)
+            dst = src.Clone(R(src), PixelFormat.Format32bppArgb);
+
             var d   = dst.LockBits(R(dst), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
             int len = d.Stride * dst.Height;
             var buf = new byte[len];
@@ -593,28 +598,27 @@ namespace InvertShiftBlend
 
             Task.Run(() =>
             {
-                Bitmap? desktop = null, crop = null, cropB = null;
-                Bitmap? invA = null, shiftA = null;
-                Bitmap? invB = null, shiftB = null;
+                Bitmap? desktop = null, crop = null;
+                Bitmap? shiftA = null;
+                Bitmap? shiftB = null;
                 Bitmap? result = null;
                 try
                 {
                     desktop = ScreenCapture.CaptureDesktop();
                     crop = ScreenCapture.Crop(desktop, bounds);
-                    cropB = ScreenCapture.Crop(desktop, bounds);
                     desktop.Dispose(); desktop = null;
 
                     Parallel.Invoke(
                         () =>
                         {
                             // Layer A
-                            invA = ImageProcessor.InvertOpaque(crop);
+                            Bitmap invA = ImageProcessor.InvertOpaque(crop);
                             shiftA = ImageProcessor.Shift(invA, pA.Px, pA.Py);
                         },
                         () =>
                         {
                             // Layer B (independent invert + shift from same source crop)
-                            invB = ImageProcessor.InvertOpaque(cropB);
+                            Bitmap invB = ImageProcessor.InvertOpaque(crop);
                             shiftB = ImageProcessor.Shift(invB, pB.Px, pB.Py);
                         },
                         () =>
@@ -649,10 +653,12 @@ namespace InvertShiftBlend
                 }
                 finally
                 {
+                    /*
                     desktop?.Dispose(); crop?.Dispose();
-                    invA?.Dispose(); //shiftA?.Dispose();
-                    invB?.Dispose(); //shiftB?.Dispose();
+                    invA?.Dispose(); shiftA?.Dispose();
+                    invB?.Dispose(); shiftB?.Dispose();
                     result?.Dispose();
+                    */
                     Interlocked.Exchange(ref _pipelineBusy, 0);
                 }
             });

@@ -167,46 +167,46 @@ namespace InvertShiftBlend
             var dD = dst   .LockBits(R(dst),     ImageLockMode.WriteOnly,PixelFormat.Format32bppArgb);
 
             int len = dA.Stride * h;
-            var bA  = new byte[len]; var bB = new byte[len]; var bD = new byte[len];
-            Marshal.Copy(dA.Scan0, bA, 0, len);
-            Marshal.Copy(dB.Scan0, bB, 0, len);
+            var A  = new byte[len]; var B = new byte[len];
+            Marshal.Copy(dA.Scan0, A, 0, len);
+            Marshal.Copy(dB.Scan0, B, 0, len);
 
             for (int i = 0; i < len; i += 4)
             {
                 // Layer A contribution (pre-multiplied alpha)
-                int aA  = (bA[i + 3] * alphaA) >> 8;
-                int rA  = bA[i + 2];
-                int gA  = bA[i + 1];
-                int blA = bA[i];
+                int aA  = (A[i + 3] * alphaA) >> 8;
+                int rA  = A[i + 2];
+                int gA  = A[i + 1];
+                int bA  = A[i];
 
                 // Layer B contribution
-                int aB  = (bB[i + 3] * alphaB) >> 8;
-                int rB  = bB[i + 2];
-                int gB  = bB[i + 1];
-                int blB = bB[i];
+                int aB  = (B[i + 3] * alphaB) >> 8;
+                int rB  = B[i + 2];
+                int gB  = B[i + 1];
+                int bB  = B[i];
 
                 // Porter-Duff A over transparent, then B over A
                 // Result = B_pre + A_pre * (1 - aB)
                 int outA  = aA + aB;
-                int outR, outG, outBl;
+                int outR, outG, outB;
                 if (outA == 0)
                 {
-                    outR = outG = outBl = 0;
+                    outR = outG = outB = 0;
                 }
                 else
                 {
-                    outR  = (rB  * aB + rA  * aA) / outA;
-                    outG  = (gB  * aB + gA  * aA) / outA;
-                    outBl = (blB * aB + blA * aA) / outA;
+                    outR = (rB * aB + rA  * aA) / outA;
+                    outG = (gB * aB + gA  * aA) / outA;
+                    outB = (bB * aB + bA * aA) / outA;
                 }
 
-                bD[i]     = (byte)(outBl);
-                bD[i + 1] = (byte)(outG);
-                bD[i + 2] = (byte)(outR);
-                bD[i + 3] = (byte)(outA);
+                A[i]     = (byte)(outB);
+                A[i + 1] = (byte)(outG);
+                A[i + 2] = (byte)(outR);
+                A[i + 3] = (byte)(outA);
             }
 
-            Marshal.Copy(bD, 0, dD.Scan0, len);
+            Marshal.Copy(A, 0, dD.Scan0, len);
             layerA.UnlockBits(dA); layerB.UnlockBits(dB); dst.UnlockBits(dD);
             return dst;
         }

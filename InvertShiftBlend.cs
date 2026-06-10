@@ -433,9 +433,6 @@ namespace InvertShiftBlend
         int  _pipelineBusy = 0;
         System.Windows.Forms.Timer _timer = null!;
 
-        Bitmap shiftA_pipe = null!;
-        Bitmap shiftB_pipe = null!;
-
         public HudForm(OverlayForm overlay)
         {
             _overlay = overlay;
@@ -619,19 +616,11 @@ namespace InvertShiftBlend
                             Bitmap invB = ImageProcessor.InvertOpaque(crop);
                             shiftB = ImageProcessor.Shift(invB, pB.Px, pB.Py);
                             invB?.Dispose();
-                        },
-                        () =>
-                        {
-                            // Composite: Porter-Duff A over B, each scaled by its alpha
-                            if (shiftA_pipe != null)
-                            {
-                                result = ImageProcessor.CompositeLayers(shiftA_pipe, pA.Alpha, shiftB_pipe, pB.Alpha);
-                            }
                         }
                     );
 
-                    shiftA_pipe = shiftA;
-                    shiftB_pipe = shiftB;
+                    // Composite: Porter-Duff A over B, each scaled by its alpha
+                    result = ImageProcessor.CompositeLayers(shiftA, pA.Alpha, shiftB, pB.Alpha);
 
                     double ms = (DateTime.Now - t0).TotalMilliseconds;
 
@@ -653,8 +642,8 @@ namespace InvertShiftBlend
                 finally
                 {
                     desktop?.Dispose(); crop?.Dispose();
-                    //shiftA?.Dispose();
-                    //shiftB?.Dispose();
+                    shiftA?.Dispose();
+                    shiftB?.Dispose();
                     result?.Dispose();
                     Interlocked.Exchange(ref _pipelineBusy, 0);
                 }

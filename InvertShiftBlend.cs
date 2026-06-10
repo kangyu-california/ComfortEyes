@@ -171,30 +171,27 @@ namespace InvertShiftBlend
             Marshal.Copy(dA.Scan0, bA, 0, len);
             Marshal.Copy(dB.Scan0, bB, 0, len);
 
-            float fA = alphaA / 255f;
-            float fB = alphaB / 255f;
-
             for (int i = 0; i < len; i += 4)
             {
                 // Layer A contribution (pre-multiplied alpha)
-                float aA  = bA[i + 3] * fA;
-                float rA  = bA[i + 2];
-                float gA  = bA[i + 1];
-                float blA = bA[i];
+                int aA  = (bA[i + 3] * alphaA) >> 8;
+                int rA  = bA[i + 2];
+                int gA  = bA[i + 1];
+                int blA = bA[i];
 
                 // Layer B contribution
-                float aB  = bB[i + 3] * fB;
-                float rB  = bB[i + 2];
-                float gB  = bB[i + 1];
-                float blB = bB[i];
+                int aB  = (bB[i + 3] * alphaB) >> 8;
+                int rB  = bB[i + 2];
+                int gB  = bB[i + 1];
+                int blB = bB[i];
 
                 // Porter-Duff A over transparent, then B over A
                 // Result = B_pre + A_pre * (1 - aB)
-                float outA  = aA + aB;
-                float outR, outG, outBl;
-                if (outA < 1e-6f)
+                int outA  = aA + aB;
+                int outR, outG, outBl;
+                if (outA == 0)
                 {
-                    outR = outG = outBl = 0f;
+                    outR = outG = outBl = 0;
                 }
                 else
                 {

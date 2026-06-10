@@ -177,20 +177,20 @@ namespace InvertShiftBlend
             for (int i = 0; i < len; i += 4)
             {
                 // Layer A contribution (pre-multiplied alpha)
-                float aA  = (bA[i + 3] / 255f) * fA;
-                float rA  = bA[i + 2] / 255f;
-                float gA  = bA[i + 1] / 255f;
-                float blA = bA[i]     / 255f;
+                float aA  = bA[i + 3] * fA;
+                float rA  = bA[i + 2];
+                float gA  = bA[i + 1];
+                float blA = bA[i];
 
                 // Layer B contribution
-                float aB  = (bB[i + 3] / 255f) * fB;
-                float rB  = bB[i + 2] / 255f;
-                float gB  = bB[i + 1] / 255f;
-                float blB = bB[i]     / 255f;
+                float aB  = bB[i + 3] * fB;
+                float rB  = bB[i + 2];
+                float gB  = bB[i + 1];
+                float blB = bB[i];
 
                 // Porter-Duff A over transparent, then B over A
                 // Result = B_pre + A_pre * (1 - aB)
-                float outA  = aA + aB * (1f - aA);
+                float outA  = aA + aB;
                 float outR, outG, outBl;
                 if (outA < 1e-6f)
                 {
@@ -198,15 +198,15 @@ namespace InvertShiftBlend
                 }
                 else
                 {
-                    outR  = (rB  * aB + rA  * aA * (1f - aB)) / outA;
-                    outG  = (gB  * aB + gA  * aA * (1f - aB)) / outA;
-                    outBl = (blB * aB + blA * aA * (1f - aB)) / outA;
+                    outR  = (rB  * aB + rA  * aA) / outA;
+                    outG  = (gB  * aB + gA  * aA) / outA;
+                    outBl = (blB * aB + blA * aA) / outA;
                 }
 
-                bD[i]     = (byte)(outBl * 255f);
-                bD[i + 1] = (byte)(outG  * 255f);
-                bD[i + 2] = (byte)(outR  * 255f);
-                bD[i + 3] = (byte)(outA  * 255f);
+                bD[i]     = (byte)(outBl);
+                bD[i + 1] = (byte)(outG);
+                bD[i + 2] = (byte)(outR);
+                bD[i + 3] = (byte)(outA);
             }
 
             Marshal.Copy(bD, 0, dD.Scan0, len);

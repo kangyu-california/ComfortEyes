@@ -5,6 +5,8 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Numerics;
+using System.Runtime.Intrinsics;
 
 // ============================================================
 //  InvertShiftBlend — dual-layer, transparent-HUD edition
@@ -115,6 +117,7 @@ namespace InvertShiftBlend
             int len = d.Stride * dst.Height;
             var buf = new byte[len];
             Marshal.Copy(d.Scan0, buf, 0, len);
+            /*
             for (int i = 0; i < len; i += 4)
             {
                 buf[i]     = (byte)(255 - buf[i]);
@@ -122,6 +125,15 @@ namespace InvertShiftBlend
                 buf[i + 2] = (byte)(255 - buf[i + 2]);
                 buf[i + 3] = 255;
             }
+            */
+            int simdWidth = Vector<byte>.Count; // e.g. 8 on AVX2
+            for (int i = 0; i <= len - simdWidth; i += simdWidth)
+            {
+                var va = new Vector<byte>(buf, i);
+                var vb = new Vector<byte>((byte)0xff);
+                (vb - va).CopyTo(buf, i);
+            }
+
             Marshal.Copy(buf, 0, d.Scan0, len);
             dst.UnlockBits(d);
             return dst;
@@ -174,13 +186,15 @@ namespace InvertShiftBlend
             for (int i = 0; i < len; i += 4)
             {
                 // Layer A contribution (pre-multiplied alpha)
-                int aA  = (A[i + 3] * alphaA) >> 8;
+                //int aA  = (A[i + 3] * alphaA) >> 8;
+                int aA  = alphaA;
                 int rA  = A[i + 2];
                 int gA  = A[i + 1];
                 int bA  = A[i];
 
                 // Layer B contribution
-                int aB  = (B[i + 3] * alphaB) >> 8;
+                //int aB  = (B[i + 3] * alphaB) >> 8;
+                int aB  = alphaB;
                 int rB  = B[i + 2];
                 int gB  = B[i + 1];
                 int bB  = B[i];

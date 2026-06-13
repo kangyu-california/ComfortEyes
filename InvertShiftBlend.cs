@@ -219,15 +219,16 @@ namespace InvertShiftBlend
             }
             */
 
-            float outA = alphaA + alphaB;
+            float wt = 1/(float)(alphaA + alphaB);
             var line = new byte[64];
             for (int j = 0; j < len; j += 64)
             {
                 for (int i = 0; i < 64; i += 4)
                 {
-                    line[i] =   (byte)((B[j+i] * alphaB + A[j+i] * alphaA) / outA);
-                    line[i+1] = (byte)((B[j+i+1] * alphaB + A[j+i+1] * alphaA) / outA);
-                    line[i+2] = (byte)((B[j+i+2] * alphaB + A[j+i+2] * alphaA) / outA);
+                    int k = i + j;
+                    line[i] =   (byte)((int)(B[k] * alphaB + A[k] * alphaA) * wt);
+                    line[i+1] = (byte)((int)(B[k+1] * alphaB + A[k+1] * alphaA) * wt);
+                    line[i+2] = (byte)((int)(B[k+2] * alphaB + A[k+2] * alphaA) * wt);
                     line[i+3] = (byte)(alphaA + alphaB);
                 }
                 line.CopyTo(A, j);

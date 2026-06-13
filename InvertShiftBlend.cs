@@ -126,11 +126,11 @@ namespace InvertShiftBlend
                 buf[i + 3] = 255;
             }
             */
-            int simdWidth = Vector<byte>.Count; // e.g. 8 on AVX2
+            int simdWidth = Vector<byte>.Count; // element number in avx/sse vector 
+            var vb = new Vector<byte>((byte)0xff);
             for (int i = 0; i <= len - simdWidth; i += simdWidth)
             {
                 var va = new Vector<byte>(buf, i);
-                var vb = new Vector<byte>((byte)0xff);
                 (vb - va).CopyTo(buf, i);
             }
 
@@ -183,41 +183,54 @@ namespace InvertShiftBlend
             Marshal.Copy(dA.Scan0, A, 0, len);
             Marshal.Copy(dB.Scan0, B, 0, len);
 
-            for (int i = 0; i < len; i += 4)
+            if (alphaA == 0 && alphaB == 0)
+                alphaA = 1;
+
+            /*
+            int simdWidth = Vector<byte>.Count; // element number in avx/sse vector 
+            for (int i = 0; i <= len - simdWidth; i += simdWidth)
             {
-                // Layer A contribution (pre-multiplied alpha)
-                //int aA  = (A[i + 3] * alphaA) >> 8;
-                int aA  = alphaA;
-                int rA  = A[i + 2];
-                int gA  = A[i + 1];
-                int bA  = A[i];
+                var va = new Vector<byte>(A, i);
+                var vb = new Vector<byte>(B, i);
 
-                // Layer B contribution
-                //int aB  = (B[i + 3] * alphaB) >> 8;
-                int aB  = alphaB;
-                int rB  = B[i + 2];
-                int gB  = B[i + 1];
-                int bB  = B[i];
+                Vector<ushort> val;
+                Vector<ushort> vah;
+                Vector.Widen(va, out val, out vah);
 
-                // Porter-Duff A over transparent, then B over A
-                // Result = B_pre + A_pre * (1 - aB)
-                int outA  = aA + aB;
-                int outR, outG, outB;
-                if (outA == 0)
+                Vector<ushort> vbl;
+                Vector<ushort> vbh;
+                Vector.Widen(vb, out vbl, out vbh);
+
+                var valm = Vector.Multiply((ushort)alphaA, val);
+                var vblm = Vector.Multiply((ushort)alphaB, vbl);
+                var vls = Vector.Add(valm, vblm);
+                vls = Vector.Divide(vls, (ushort)(alphaA + alphaB));
+
+                var vahm = Vector.Multiply((ushort)alphaA, vah);
+                var vbhm = Vector.Multiply((ushort)alphaB, vbh);
+                var vhs = Vector.Add(vahm, vbhm);
+                vhs = Vector.Divide(vhs, (ushort)(alphaA + alphaB));
+
+                var r = Vector.Narrow(vls, vhs);
+                Span<byte> bytes = MemoryMarshal.AsBytes(MemoryMarshal.CreateSpan(ref r, 1));
+                for (int j = 3; j < simdWidth; j += 4)
+                    bytes[j] = (byte)(alphaA + alphaB);
+                r.CopyTo(A, i);
+            }
+            */
+
+            float outA = alphaA + alphaB;
+            var line = new byte[64];
+            for (int j = 0; j < len; j += 64)
+            {
+                for (int i = 0; i < 64; i += 4)
                 {
-                    outR = outG = outB = 0;
+                    line[i] =   (byte)((B[j+i] * alphaB + A[j+i] * alphaA) / outA);
+                    line[i+1] = (byte)((B[j+i+1] * alphaB + A[j+i+1] * alphaA) / outA);
+                    line[i+2] = (byte)((B[j+i+2] * alphaB + A[j+i+2] * alphaA) / outA);
+                    line[i+3] = (byte)(alphaA + alphaB);
                 }
-                else
-                {
-                    outR = (rB * aB + rA  * aA) / outA;
-                    outG = (gB * aB + gA  * aA) / outA;
-                    outB = (bB * aB + bA * aA) / outA;
-                }
-
-                A[i]     = (byte)(outB);
-                A[i + 1] = (byte)(outG);
-                A[i + 2] = (byte)(outR);
-                A[i + 3] = (byte)(outA);
+                line.CopyTo(A, j);
             }
 
             Marshal.Copy(A, 0, dD.Scan0, len);

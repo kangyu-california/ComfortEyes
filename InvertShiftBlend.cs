@@ -105,18 +105,12 @@ namespace InvertShiftBlend
         static Rectangle R(Bitmap b) => new Rectangle(0, 0, b.Width, b.Height);
 
         // Invert RGB, force A=255
-        static Object src_lock = new object();
-
-        public static Bitmap InvertOpaque(Bitmap src)
+        public static byte[] InvertOpaque(Bitmap src)
         {
-            Bitmap dst;
-            lock(src_lock)
-            dst = src.Clone(R(src), PixelFormat.Format32bppArgb);
-
-            var d   = dst.LockBits(R(dst), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
-            int len = d.Stride * dst.Height;
+            var d   = src.LockBits(R(src), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+            int len = src.Width * src.Height * 4;
             var buf = new byte[len];
-            Marshal.Copy(d.Scan0, buf, 0, len);
+            //Marshal.Copy(d.Scan0, buf, 0, len);
             /*
             for (int i = 0; i < len; i += 4)
             {
@@ -128,39 +122,33 @@ namespace InvertShiftBlend
             */
             int simdWidth = Vector<byte>.Count; // element number in avx/sse vector 
             var vb = new Vector<byte>((byte)0xff);
+            var va = new byte[simdWidth];
             for (int i = 0; i <= len - simdWidth; i += simdWidth)
             {
-                var va = new Vector<byte>(buf, i);
-                (vb - va).CopyTo(buf, i);
+                Marshal.Copy(d.Scan0 + i, va, 0, simdWidth);
+                var v = new Vector<byte>(va);
+                (vb - v).CopyTo(buf, i);
             }
-
-            Marshal.Copy(buf, 0, d.Scan0, len);
-            dst.UnlockBits(d);
-            return dst;
+            src.UnlockBits(d);
+            return buf;
         }
 
         // Shift by (px, py); exposed area is transparent
-        public static Bitmap Shift(Bitmap src, int px, int py)
+        public static byte[] Shift(byte[] src, int px, int py, int width, int height)
         {
-            int w = src.Width, h = src.Height;
-            var dst = new Bitmap(w, h, PixelFormat.Format32bppArgb);
-            using (var g = Graphics.FromImage(dst)) g.Clear(Color.Transparent);
+            int w = width, h = height;
 
             int srcX = px >= 0 ? 0 : -px, dstX = px >= 0 ? px : 0, cw = w - Math.Abs(px);
             int srcY = py >= 0 ? 0 : -py, dstY = py >= 0 ? py : 0, ch = h - Math.Abs(py);
-            if (cw <= 0 || ch <= 0) return dst;
+            if (cw <= 0 || ch <= 0) return src;
 
-            var sd = src.LockBits(R(src), ImageLockMode.ReadOnly,  PixelFormat.Format32bppArgb);
-            var dd = dst.LockBits(R(dst), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-            int stride = sd.Stride;
-            var sb = new byte[stride * h]; var db = new byte[stride * h];
-            Marshal.Copy(sd.Scan0, sb, 0, sb.Length);
+            //int stride = sd.Stride;
+            int stride = w * 4;
+            var dst = new byte[stride * h];
             int rb = cw * 4;
             for (int r = 0; r < ch; r++)
-                Buffer.BlockCopy(sb, (srcY + r) * stride + srcX * 4,
-                                 db, (dstY + r) * stride + dstX * 4, rb);
-            Marshal.Copy(db, 0, dd.Scan0, db.Length);
-            src.UnlockBits(sd); dst.UnlockBits(dd);
+                Buffer.BlockCopy(src, (srcY + r) * stride + srcX * 4,
+                                 dst, (dstY + r) * stride + dstX * 4, rb);
             return dst;
         }
 
@@ -168,20 +156,14 @@ namespace InvertShiftBlend
         // Each layer pixel is pre-multiplied by its alpha, then
         // Porter-Duff "over" is applied sequentially.
         // dst starts transparent; layer A is drawn first, then B on top.
-        public static Bitmap CompositeLayers(Bitmap layerA, byte alphaA,
-                                              Bitmap layerB, byte alphaB)
+        public static Bitmap CompositeLayers(byte[] A, byte alphaA,
+                                              Span<byte> B, byte alphaB,
+                                              int w, int h)
         {
-            int w = layerA.Width, h = layerA.Height;
             var dst = new Bitmap(w, h, PixelFormat.Format32bppArgb);
+            var dD = dst.LockBits(R(dst), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
 
-            var dA = layerA.LockBits(R(layerA), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-            var dB = layerB.LockBits(R(layerB), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-            var dD = dst   .LockBits(R(dst),     ImageLockMode.WriteOnly,PixelFormat.Format32bppArgb);
-
-            int len = dA.Stride * h;
-            var A  = new byte[len]; var B = new byte[len];
-            Marshal.Copy(dA.Scan0, A, 0, len);
-            Marshal.Copy(dB.Scan0, B, 0, len);
+            int len = dD.Stride * h;
 
             if (alphaA == 0 && alphaB == 0)
                 alphaA = 1;
@@ -235,7 +217,7 @@ namespace InvertShiftBlend
             }
 
             Marshal.Copy(A, 0, dD.Scan0, len);
-            layerA.UnlockBits(dA); layerB.UnlockBits(dB); dst.UnlockBits(dD);
+            dst.UnlockBits(dD);
             return dst;
         }
     }
@@ -621,8 +603,6 @@ namespace InvertShiftBlend
             Task.Run(() =>
             {
                 Bitmap? desktop = null, crop = null;
-                Bitmap? shiftA = null;
-                Bitmap? shiftB = null;
                 Bitmap? result = null;
                 try
                 {
@@ -630,25 +610,27 @@ namespace InvertShiftBlend
                     crop = ScreenCapture.Crop(desktop, bounds);
                     desktop.Dispose(); desktop = null;
 
+                    byte[] inv = ImageProcessor.InvertOpaque(crop);
+                    byte[] shiftA = null;
+                    byte[] shiftB = null;
                     Parallel.Invoke(
                         () =>
                         {
                             // Layer A
-                            Bitmap invA = ImageProcessor.InvertOpaque(crop);
-                            shiftA = ImageProcessor.Shift(invA, pA.Px, pA.Py);
-                            invA?.Dispose();
+                            shiftA = ImageProcessor.Shift(inv, pA.Px, pA.Py, crop.Width, crop.Height);
                         },
                         () =>
                         {
                             // Layer B (independent invert + shift from same source crop)
-                            Bitmap invB = ImageProcessor.InvertOpaque(crop);
-                            shiftB = ImageProcessor.Shift(invB, pB.Px, pB.Py);
-                            invB?.Dispose();
+                            shiftB = ImageProcessor.Shift(inv, pB.Px, pB.Py, crop.Width, crop.Height);
                         }
                     );
 
                     // Composite: Porter-Duff A over B, each scaled by its alpha
-                    result = ImageProcessor.CompositeLayers(shiftA, pA.Alpha, shiftB, pB.Alpha);
+                    result = ImageProcessor.CompositeLayers(shiftA, pA.Alpha, shiftB, pB.Alpha, crop.Width, crop.Height);
+
+                    shiftA = null;
+                    shiftB = null;
 
                     double ms = (DateTime.Now - t0).TotalMilliseconds;
 
@@ -669,9 +651,8 @@ namespace InvertShiftBlend
                 }
                 finally
                 {
-                    desktop?.Dispose(); crop?.Dispose();
-                    shiftA?.Dispose();
-                    shiftB?.Dispose();
+                    desktop?.Dispose();
+                    crop?.Dispose();
                     result?.Dispose();
                     Interlocked.Exchange(ref _pipelineBusy, 0);
                 }

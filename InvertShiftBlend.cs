@@ -626,6 +626,8 @@ namespace InvertShiftBlend
                         }
                     );
 
+                    inv = null;
+
                     // Composite: Porter-Duff A over B, each scaled by its alpha
                     result = ImageProcessor.CompositeLayers(shiftA, pA.Alpha, shiftB, pB.Alpha, crop.Width, crop.Height);
 

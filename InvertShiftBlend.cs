@@ -152,19 +152,21 @@ namespace InvertShiftBlend
             return dst;
         }
 
+        // Starting from Inversed image I,
         // Composite two layers (A and B) onto one bitmap.
-        // Each layer pixel is pre-multiplied by its alpha, then
-        // Porter-Duff "over" is applied sequentially.
-        // dst starts transparent; layer A is drawn first, then B on top.
-        public static Bitmap CompositeLayers(byte[] A, byte alphaA,
-                                              Span<byte> B, byte alphaB,
+        // Each layer pixel is shifted and pre-multiplied by its alpha,
+        // and rendered on dst
+        public static Bitmap CompositeLayers(byte[] I, LayerParams pA, LayerParams pB,
                                               int w, int h)
         {
             var dst = new Bitmap(w, h, PixelFormat.Format32bppArgb);
             var dD = dst.LockBits(R(dst), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
 
             int len = dD.Stride * h;
+            byte[] r = new byte[len];
 
+            byte alphaA = pA.Alpha;
+            byte alphaB = pB.Alpha;
             if (alphaA == 0 && alphaB == 0)
                 alphaA = 1;
 
@@ -202,21 +204,30 @@ namespace InvertShiftBlend
             */
 
             int wt = (int)(256*256/(alphaA + alphaB));
+            int da = -pA.Px * 4 - pA.Py * dD.Stride;
+            int db = -pB.Px * 4 - pB.Py * dD.Stride;
+
             var line = new byte[64];
             for (int j = 0; j < len; j += 64)
             {
+                if (j + da < 0 || j + da + 63 > len)
+                    continue;
+                if (j + db < 0 || j + db + 63 > len)
+                    continue;
                 for (int i = 0; i < 64; i += 4)
                 {
-                    int k = i + j;
-                    line[i] =   (byte)(((B[k] * alphaB + A[k] * alphaA) * wt) >> 16);
-                    line[i+1] = (byte)(((B[k+1] * alphaB + A[k+1] * alphaA) * wt) >> 16);
-                    line[i+2] = (byte)(((B[k+2] * alphaB + A[k+2] * alphaA) * wt) >> 16);
+                    int ak = i + j + da;
+                    int bk = i + j + db;
+                    line[i] =   (byte)(((I[bk] * alphaB + I[ak] * alphaA) * wt) >> 16);
+                    line[i+1] = (byte)(((I[bk+1] * alphaB + I[ak+1] * alphaA) * wt) >> 16);
+                    line[i+2] = (byte)(((I[bk+2] * alphaB + I[ak+2] * alphaA) * wt) >> 16);
                     line[i+3] = (byte)(alphaA + alphaB);
                 }
-                line.CopyTo(A, j);
+                line.CopyTo(r, j);
             }
 
-            Marshal.Copy(A, 0, dD.Scan0, len);
+            Marshal.Copy(r, 0, dD.Scan0, len);
+            r = null;
             dst.UnlockBits(dD);
             return dst;
         }
@@ -611,8 +622,7 @@ namespace InvertShiftBlend
                     desktop.Dispose(); desktop = null;
 
                     byte[] inv = ImageProcessor.InvertOpaque(crop);
-                    byte[] shiftA = null;
-                    byte[] shiftB = null;
+                    /*
                     Parallel.Invoke(
                         () =>
                         {
@@ -625,14 +635,12 @@ namespace InvertShiftBlend
                             shiftB = ImageProcessor.Shift(inv, pB.Px, pB.Py, crop.Width, crop.Height);
                         }
                     );
+                    */
 
-                    inv = null;
 
                     // Composite: Porter-Duff A over B, each scaled by its alpha
-                    result = ImageProcessor.CompositeLayers(shiftA, pA.Alpha, shiftB, pB.Alpha, crop.Width, crop.Height);
-
-                    shiftA = null;
-                    shiftB = null;
+                    result = ImageProcessor.CompositeLayers(inv, pA, pB, crop.Width, crop.Height);
+                    inv = null;
 
                     double ms = (DateTime.Now - t0).TotalMilliseconds;
 

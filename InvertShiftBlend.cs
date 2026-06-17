@@ -209,6 +209,7 @@ namespace InvertShiftBlend
 
             Parallel.For(0, 2, thread =>
             {
+                var line = new byte[64];
                 for (int j = 0; j < len; j += 64)
                 {
                     if ((j / 64) % 2 != thread)
@@ -217,7 +218,6 @@ namespace InvertShiftBlend
                         continue;
                     if (j + db < 0 || j + db + 63 > len)
                         continue;
-                    var line = new byte[64];
                     for (int i = 0; i < 64; i += 4)
                     {
                         int ak = i + j + da;

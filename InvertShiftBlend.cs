@@ -163,7 +163,6 @@ namespace InvertShiftBlend
             var dD = dst.LockBits(R(dst), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
 
             int len = dD.Stride * h;
-            byte[] r = new byte[len];
 
             byte alphaA = pA.Alpha;
             byte alphaB = pB.Alpha;
@@ -227,12 +226,11 @@ namespace InvertShiftBlend
                         line[i + 2] = (byte)(((I[bk + 2] * alphaB + I[ak + 2] * alphaA) * wt) >> 16);
                         line[i + 3] = (byte)(alphaA + alphaB);
                     }
-                    line.CopyTo(r, j);
+                    //line.CopyTo(r, j);
+                    Marshal.Copy(line, 0, dD.Scan0 + j, 64);
                 }
             });
 
-            Marshal.Copy(r, 0, dD.Scan0, len);
-            r = null;
             dst.UnlockBits(dD);
             return dst;
         }

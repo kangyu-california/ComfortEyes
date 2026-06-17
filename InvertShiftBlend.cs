@@ -105,7 +105,7 @@ namespace InvertShiftBlend
         static Rectangle R(Bitmap b) => new Rectangle(0, 0, b.Width, b.Height);
 
         // Invert RGB, force A=255
-        public static byte[] InvertOpaque(Bitmap src, bool pause)
+        public static byte[] InvertOpaque(Bitmap src)
         {
             var d   = src.LockBits(R(src), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
             int len = src.Width * src.Height * 4;
@@ -128,16 +128,6 @@ namespace InvertShiftBlend
                 Marshal.Copy(d.Scan0 + i, va, 0, simdWidth);
                 var v = new Vector<byte>(va);
                 (vb - v).CopyTo(buf, i);
-            }
-
-            if (pause)
-            { 
-                for (int i = 0; i <= len - simdWidth; i += simdWidth)
-                {
-                    Marshal.Copy(d.Scan0 + i, va, 0, simdWidth);
-                    var v = new Vector<byte>(va);
-                    vb.CopyTo(buf, i);
-                }
             }
 
             src.UnlockBits(d);
@@ -635,7 +625,7 @@ namespace InvertShiftBlend
                     crop = ScreenCapture.Crop(desktop, bounds);
                     desktop.Dispose(); desktop = null;
 
-                    byte[] inv = ImageProcessor.InvertOpaque(crop, !_running);
+                    byte[] inv = ImageProcessor.InvertOpaque(crop);
                     /*
                     Parallel.Invoke(
                         () =>

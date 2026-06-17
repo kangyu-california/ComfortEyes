@@ -207,24 +207,29 @@ namespace InvertShiftBlend
             int da = -pA.Px * 4 - pA.Py * dD.Stride;
             int db = -pB.Px * 4 - pB.Py * dD.Stride;
 
-            var line = new byte[64];
-            for (int j = 0; j < len; j += 64)
+            Parallel.For(0, 2, thread =>
             {
-                if (j + da < 0 || j + da + 63 > len)
-                    continue;
-                if (j + db < 0 || j + db + 63 > len)
-                    continue;
-                for (int i = 0; i < 64; i += 4)
+                for (int j = 0; j < len; j += 64)
                 {
-                    int ak = i + j + da;
-                    int bk = i + j + db;
-                    line[i] =   (byte)(((I[bk] * alphaB + I[ak] * alphaA) * wt) >> 16);
-                    line[i+1] = (byte)(((I[bk+1] * alphaB + I[ak+1] * alphaA) * wt) >> 16);
-                    line[i+2] = (byte)(((I[bk+2] * alphaB + I[ak+2] * alphaA) * wt) >> 16);
-                    line[i+3] = (byte)(alphaA + alphaB);
+                    if ((j / 64) % 2 != thread)
+                        continue;
+                    if (j + da < 0 || j + da + 63 > len)
+                        continue;
+                    if (j + db < 0 || j + db + 63 > len)
+                        continue;
+                    var line = new byte[64];
+                    for (int i = 0; i < 64; i += 4)
+                    {
+                        int ak = i + j + da;
+                        int bk = i + j + db;
+                        line[i] = (byte)(((I[bk] * alphaB + I[ak] * alphaA) * wt) >> 16);
+                        line[i + 1] = (byte)(((I[bk + 1] * alphaB + I[ak + 1] * alphaA) * wt) >> 16);
+                        line[i + 2] = (byte)(((I[bk + 2] * alphaB + I[ak + 2] * alphaA) * wt) >> 16);
+                        line[i + 3] = (byte)(alphaA + alphaB);
+                    }
+                    line.CopyTo(r, j);
                 }
-                line.CopyTo(r, j);
-            }
+            });
 
             Marshal.Copy(r, 0, dD.Scan0, len);
             r = null;

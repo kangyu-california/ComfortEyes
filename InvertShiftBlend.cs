@@ -327,27 +327,21 @@ namespace InvertShiftBlend
         public readonly TextBox  TextBox;
         bool _syncing;
 
-        public int IntValue => Slider.Value;
+        //public int IntValue => Slider.Value;
+        public int IntValue;
 
         public ControlRow(Control parent, string label,
                           int min, int max, int initial, bool isPercent,
-                          int x, int y, int sliderW = 160, int labelW = 96)
+                          int x, int y, int sliderW = 100, int labelW = 96, bool show_slider = true)
         {
+            IntValue = initial;
+
             parent.Controls.Add(new Label
             {
                 Text = label, Location = new Point(x, y + 9), Size = new Size(labelW, 18),
                 ForeColor = Color.FromArgb(185, 185, 185), BackColor = Color.Transparent,
                 TextAlign = ContentAlignment.MiddleRight,
             });
-
-            Slider = new TrackBar
-            {
-                Minimum = min, Maximum = max, Value = initial,
-                Location = new Point(x + labelW + 4, y), Size = new Size(sliderW, 32),
-                TickFrequency = Math.Max(1, (max - min) / 10),
-                BackColor = Color.FromArgb(28, 28, 32),
-            };
-            parent.Controls.Add(Slider);
 
             TextBox = new TextBox
             {
@@ -357,15 +351,32 @@ namespace InvertShiftBlend
                 BorderStyle = BorderStyle.FixedSingle, TextAlign = HorizontalAlignment.Center,
                 Font = new Font("Consolas", 8.5f),
             };
+
             parent.Controls.Add(TextBox);
 
-            Slider.ValueChanged += (_, __) =>
+            if (show_slider)
             {
-                if (_syncing) return; _syncing = true;
-                TextBox.Text = Fmt(Slider.Value, isPercent);
-                TextBox.BackColor = Color.FromArgb(42, 42, 48);
-                _syncing = false;
-            };
+                Slider = new TrackBar
+                {
+                    Minimum = min,
+                    Maximum = max,
+                    Value = initial,
+                    Location = new Point(x + labelW + 4, y),
+                    Size = new Size(sliderW, 32),
+                    TickFrequency = Math.Max(1, (max - min) / 10),
+                    BackColor = Color.FromArgb(28, 28, 32),
+                };
+
+                Slider.ValueChanged += (_, __) =>
+                {
+                    if (_syncing) return; _syncing = true;
+                    TextBox.Text = Fmt(Slider.Value, isPercent);
+                    TextBox.BackColor = Color.FromArgb(42, 42, 48);
+                    _syncing = false;
+                };
+
+                parent.Controls.Add(Slider);
+            }
 
             void Apply(object? s, EventArgs e)
             {
@@ -375,8 +386,9 @@ namespace InvertShiftBlend
                     string raw = TextBox.Text.TrimEnd('%', ' ');
                     if (int.TryParse(raw, out int v))
                     {
-                        Slider.Value = Math.Clamp(v, min, max);
-                        TextBox.Text = Fmt(Slider.Value, isPercent);
+                        if (Slider != null)
+                            Slider.Value = Math.Clamp(v, min, max);
+                        TextBox.Text = Fmt(IntValue, isPercent);
                         TextBox.BackColor = Color.FromArgb(42, 42, 48);
                     }
                     else TextBox.BackColor = Color.FromArgb(100, 36, 36);
@@ -412,20 +424,20 @@ namespace InvertShiftBlend
             ForeColor = accentColor;
             BackColor = Color.FromArgb(28, 28, 32);
             Font      = new Font("Segoe UI", 8.5f, FontStyle.Bold);
-            Size      = new Size(326, 122);
+            Size      = new Size(280, 122);
             Padding   = new Padding(2);
 
             // labelW=80 sliderW=140 textbox=52 → fits inside 326px GroupBox
             const int X = 6;
-            RowX     = new ControlRow(this, "X shift:", -400, 400, defaultPx,    false, X,  16, 140, 70);
-            RowY     = new ControlRow(this, "Y shift:", -400, 400, defaultPy,    false, X,  52, 140, 70);
-            RowBlend = new ControlRow(this, "Blend:",       0, 100, defaultBlend, true,  X,  88, 140, 70);
+            RowX     = new ControlRow(this, "X shift:", -20, 20, defaultPx,    false, X,  16, 100, 70, false);
+            RowY     = new ControlRow(this, "Y shift:", -20, 20, defaultPy,    false, X,  52, 100, 70, false);
+            RowBlend = new ControlRow(this, "Blend:",       0, 100, defaultBlend, true,  X,  88, 100, 70, false);
 
             _chkEnabled = new CheckBox
             {
                 Text      = "On",
                 Checked   = true,
-                Location  = new Point(278, 2),
+                Location  = new Point(96, 2),
                 Size      = new Size(42, 18),
                 ForeColor = accentColor,
                 BackColor = Color.Transparent,
@@ -462,11 +474,11 @@ namespace InvertShiftBlend
         {
             _overlay = overlay;
 
-            Text            = "Astigmatism Controls";
+            Text            = "Comfort Eye";
             FormBorderStyle = FormBorderStyle.SizableToolWindow;
             StartPosition   = FormStartPosition.Manual;
             ShowInTaskbar   = true;
-            ClientSize      = new Size(680, 264);
+            ClientSize      = new Size(600, 264);
             BackColor       = Color.FromArgb(22, 22, 26);
             ForeColor       = Color.White;
             Font            = new Font("Segoe UI", 8.5f);
@@ -537,7 +549,7 @@ namespace InvertShiftBlend
             Controls.Add(_sliderHudAlpha);
             _lblHudAlpha = new Label
             {
-                Text = "78%", Location = new Point(_sliderHudAlpha.Right + PAD, topY + 16),
+                Text = "60%", Location = new Point(_sliderHudAlpha.Right + PAD, topY + 16),
                 AutoSize = true, ForeColor = Color.FromArgb(160, 200, 160),
                 Font = new Font("Consolas", 8f),
             };
@@ -550,8 +562,8 @@ namespace InvertShiftBlend
                 AutoSize = true, ForeColor = Color.FromArgb(160, 160, 160),
                 BackColor = Color.Transparent,
             });
-            _rowInterval = new ControlRow(this, "", 100, 2000, 500, false,
-                                          rightX, topY + 16, 240, 4);
+            _rowInterval = new ControlRow(this, "", 100, 2000, 100, false,
+                                          rightX, topY + 16, 200, 4);
             _rowInterval.Slider.ValueChanged += (_, __) =>
             { if (_timer != null) _timer.Interval = _rowInterval.IntValue; };
 
@@ -559,7 +571,7 @@ namespace InvertShiftBlend
             _btnToggle = new Button
             {
                 Text = "▶ Start",
-                Location = new Point(PAD, _rowInterval.Slider.Bottom + PAD),
+                Location = new Point(PAD, _sliderHudAlpha.Bottom + PAD),
                 Size = new Size(130, 36),
                 BackColor = Color.FromArgb(0, 125, 55), ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 9f, FontStyle.Bold),

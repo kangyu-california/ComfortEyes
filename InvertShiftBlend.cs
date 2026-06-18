@@ -508,12 +508,12 @@ namespace InvertShiftBlend
             const int PAD = 8;
 
             // ── Layer A (left) ─────────────────────────────────
-            _layerA = new LayerPanel("Left Eye", Color.FromArgb(80, 180, 255), 0, 0, 15);
+            _layerA = new LayerPanel("Left Eye", Color.FromArgb(80, 180, 255), -1, 1, 12);
             _layerA.Location = new Point(PAD, PAD);
             Controls.Add(_layerA);
 
             // ── Layer B (right) ────────────────────────────────
-            _layerB = new LayerPanel("Right Eye", Color.FromArgb(255, 160, 80), 0, 0, 5);
+            _layerB = new LayerPanel("Right Eye", Color.FromArgb(255, 160, 80), 1, -1, 12);
             _layerB.Location = new Point(PAD + _layerA.Width + PAD, PAD);
             Controls.Add(_layerB);
 

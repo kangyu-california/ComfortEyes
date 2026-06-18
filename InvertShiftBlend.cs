@@ -525,7 +525,7 @@ namespace InvertShiftBlend
             Controls.Add(_layerA);
 
             // ── Layer B (right) ────────────────────────────────
-            _layerB = new LayerPanel("Right Eye", Color.FromArgb(255, 160, 80), 1, -1, 12);
+            _layerB = new LayerPanel("Right Eye", Color.FromArgb(80, 180, 255), 1, -1, 12);
             _layerB.Location = new Point(PAD + _layerA.Width + PAD, PAD);
             Controls.Add(_layerB);
 

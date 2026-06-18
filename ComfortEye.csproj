@@ -7,8 +7,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
-    <AssemblyName>InvertShiftBlend</AssemblyName>
-    <RootNamespace>InvertShiftBlend</RootNamespace>
+    <AssemblyName>ComfortEye</AssemblyName>
+    <RootNamespace>ComfortEye</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

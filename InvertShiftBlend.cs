@@ -541,7 +541,7 @@ namespace InvertShiftBlend
             });
             _sliderHudAlpha = new TrackBar
             {
-                Minimum = 0, Maximum = 255, Value = 200,
+                Minimum = 0, Maximum = 255, Value = 153,
                 Location = new Point(PAD, topY + 16), Size = new Size(240, 32),
                 TickFrequency = 24, BackColor = Color.FromArgb(22, 22, 26),
             };

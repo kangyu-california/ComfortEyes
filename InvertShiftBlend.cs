@@ -388,6 +388,8 @@ namespace InvertShiftBlend
                     {
                         if (Slider != null)
                             Slider.Value = Math.Clamp(v, min, max);
+                        else
+                            IntValue = Math.Clamp(v, min, max);
                         TextBox.Text = Fmt(IntValue, isPercent);
                         TextBox.BackColor = Color.FromArgb(42, 42, 48);
                     }

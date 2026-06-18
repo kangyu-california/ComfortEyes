@@ -558,7 +558,7 @@ namespace InvertShiftBlend
             // ── Interval row ───────────────────────────────────
             Controls.Add(new Label
             {
-                Text = "Interval (ms):", Location = new Point(rightX, topY),
+                Text = "Screen Update Interval (ms):", Location = new Point(rightX + 16, topY),
                 AutoSize = true, ForeColor = Color.FromArgb(160, 160, 160),
                 BackColor = Color.Transparent,
             });

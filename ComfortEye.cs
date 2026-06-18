@@ -9,7 +9,7 @@ using System.Numerics;
 using System.Runtime.Intrinsics;
 
 // ============================================================
-//  InvertShiftBlend — dual-layer, transparent-HUD edition
+//  ComfortEye — dual-layer, transparent-HUD edition
 //
 //  Two independent layers, each produces:
 //    Invert(capture) → Shift(px,py) → draw at alpha (0-100%)
@@ -23,7 +23,7 @@ using System.Runtime.Intrinsics;
 //  OverlayForm remains WS_EX_TRANSPARENT so input passes through.
 // ============================================================
 
-namespace InvertShiftBlend
+namespace ComfortEye
 {
     // ══════════════════════════════════════════════════════════
     //  Win32
@@ -709,6 +709,8 @@ namespace InvertShiftBlend
         [STAThread]
         static void Main()
         {
+            Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             var overlay = new OverlayForm();

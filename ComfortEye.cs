@@ -371,7 +371,8 @@ namespace ComfortEye
                     Value = initial,
                     Location = new Point(x + labelW + 4, y),
                     Size = new Size(sliderW, 32),
-                    TickFrequency = Math.Max(1, (max - min) / 10),
+                    //TickFrequency = Math.Max(1, (max - min) / 10),
+                    TickStyle = TickStyle.None,
                     BackColor = Color.FromArgb(28, 28, 32),
                 };
 
@@ -613,7 +614,7 @@ namespace ComfortEye
             {
                 Minimum = 0, Maximum = 100, Value = 80,
                 Location = new Point(PAD, topY + 16), Size = new Size(240, 32),
-                //TickFrequency = 24,
+                TickStyle = TickStyle.None,
                 BackColor = Color.FromArgb(22, 22, 26),
             };
             _sliderHudAlpha.ValueChanged += (_, __) => ApplyHudAlpha();

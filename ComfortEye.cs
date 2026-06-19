@@ -545,9 +545,11 @@ namespace ComfortEye
             _overlay = overlay;
 
             Text            = "Comfort Eye";
-            FormBorderStyle = FormBorderStyle.SizableToolWindow;
+            //FormBorderStyle = FormBorderStyle.SizableToolWindow;
+            FormBorderStyle = FormBorderStyle.Sizable;
+            MaximizeBox = false;
             StartPosition   = FormStartPosition.Manual;
-            ShowInTaskbar   = true;
+            ShowInTaskbar   = false;
             ClientSize      = new Size(600, 264);
             BackColor       = Color.FromArgb(22, 22, 26);
             ForeColor       = Color.White;

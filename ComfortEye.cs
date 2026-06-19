@@ -325,6 +325,11 @@ namespace ComfortEye
     {
         public readonly TrackBar Slider;
         public readonly TextBox  TextBox;
+        private Button BtnUp = new Button();
+        private Button BtnDown = new Button();
+        private int Min, Max;
+        private bool IsPercent;
+
         bool _syncing;
 
         //public int IntValue => Slider.Value;
@@ -335,6 +340,9 @@ namespace ComfortEye
                           int x, int y, int sliderW = 100, int labelW = 96, bool show_slider = true)
         {
             IntValue = initial;
+            Min = min;
+            Max = max;
+            IsPercent = isPercent;
 
             parent.Controls.Add(new Label
             {
@@ -377,6 +385,49 @@ namespace ComfortEye
 
                 parent.Controls.Add(Slider);
             }
+            else
+            {
+                // Container panel for the two stacked buttons
+                /*
+                var btnPanel = new Panel
+                {
+                    Dock = DockStyle.Right,
+                    Height = 18,
+                    Width = 18
+                };
+                */
+
+                BtnUp.Text = "▲";
+                BtnUp.Location = new Point(TextBox.Right + 2, TextBox.Top);
+                BtnUp.Width = 20;
+                BtnUp.Height = 20;
+                BtnUp.Font = new Font("Consolas", 8f);
+                BtnUp.TabStop = false;
+                BtnUp.Cursor = Cursors.Default;
+                BtnUp.BackColor = Color.Black;
+                BtnUp.ForeColor = Color.Orange;
+
+                BtnUp.FlatStyle = FlatStyle.Flat; //, Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                BtnUp.FlatAppearance.BorderSize = 0;
+                BtnUp.Click += BtnClick;
+
+                BtnDown.Text = "▼";
+                BtnDown.Location = new Point(TextBox.Left - 22, TextBox.Top);
+                BtnDown.Width = 20;
+                BtnDown.Height = 20;
+                BtnDown.Font = new Font("Consolas", 8f);
+                BtnDown.TabStop = false;
+                BtnDown.Cursor = Cursors.Default;
+                BtnDown.BackColor = Color.Black;
+                BtnDown.ForeColor = Color.Orange;
+
+                BtnDown.FlatStyle = FlatStyle.Flat; //, Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                BtnDown.FlatAppearance.BorderSize = 0;
+                BtnDown.Click += BtnClick;
+
+                parent.Controls.Add(BtnUp);
+                parent.Controls.Add(BtnDown);
+            }
 
             void Apply(object? s, EventArgs e)
             {
@@ -402,6 +453,22 @@ namespace ComfortEye
         }
 
         static string Fmt(int v, bool pct) => pct ? $"{v}%" : v.ToString();
+        void BtnClick(object? sender, EventArgs e)
+        {
+            string raw = TextBox.Text.TrimEnd('%', ' ');
+            if (int.TryParse(raw, out int v))
+            {
+                if (sender == BtnUp)
+                    v++;
+                else
+                    v--;
+                if (Slider != null)
+                    Slider.Value = Math.Clamp(v, Min, Max);
+                else
+                    IntValue = Math.Clamp(v, Min, Max);
+                TextBox.Text = Fmt(IntValue, IsPercent);
+            }
+        }
     }
 
     // ══════════════════════════════════════════════════════════
@@ -431,9 +498,9 @@ namespace ComfortEye
 
             // labelW=80 sliderW=140 textbox=52 → fits inside 326px GroupBox
             const int X = 6;
-            RowX     = new ControlRow(this, "X shift:", -20, 20, defaultPx,    false, X,  16, 100, 70, false);
-            RowY     = new ControlRow(this, "Y shift:", -20, 20, defaultPy,    false, X,  52, 100, 70, false);
-            RowBlend = new ControlRow(this, "Blend:",       0, 100, defaultBlend, true,  X,  88, 100, 70, false);
+            RowX     = new ControlRow(this, "X shift:", -20, 20, defaultPx,    false, X,  16, 80, 70, false);
+            RowY     = new ControlRow(this, "Y shift:", -20, 20, defaultPy,    false, X,  52, 80, 70, false);
+            RowBlend = new ControlRow(this, "Blend:",       0, 100, defaultBlend, true,  X,  88, 80, 70, false);
 
             _chkEnabled = new CheckBox
             {

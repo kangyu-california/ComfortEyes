@@ -579,8 +579,9 @@ namespace ComfortEye
         void ApplyHudAlpha()
         {
             byte a = (byte)_sliderHudAlpha.Value;
-            Win32.SetLayeredWindowAttributes(Handle, 0, a, Win32.LWA_ALPHA);
-            _lblHudAlpha.Text = $"{(int)Math.Round(a * 100f / 255f)}%";
+            byte alpha = (byte)Math.Round(a * 255f / 100f);
+            Win32.SetLayeredWindowAttributes(Handle, 0, alpha, Win32.LWA_ALPHA);
+            _lblHudAlpha.Text = $"{(int)a}%";
         }
 
         // ──────────────────────────────────────────────────────
@@ -610,15 +611,16 @@ namespace ComfortEye
             });
             _sliderHudAlpha = new TrackBar
             {
-                Minimum = 0, Maximum = 255, Value = 153,
+                Minimum = 0, Maximum = 100, Value = 80,
                 Location = new Point(PAD, topY + 16), Size = new Size(240, 32),
-                TickFrequency = 24, BackColor = Color.FromArgb(22, 22, 26),
+                //TickFrequency = 24,
+                BackColor = Color.FromArgb(22, 22, 26),
             };
             _sliderHudAlpha.ValueChanged += (_, __) => ApplyHudAlpha();
             Controls.Add(_sliderHudAlpha);
             _lblHudAlpha = new Label
             {
-                Text = "60%", Location = new Point(_sliderHudAlpha.Right + PAD, topY + 16),
+                Text = "80%", Location = new Point(_sliderHudAlpha.Right + PAD, topY + 16),
                 AutoSize = true, ForeColor = Color.FromArgb(160, 200, 160),
                 Font = new Font("Consolas", 8f),
             };

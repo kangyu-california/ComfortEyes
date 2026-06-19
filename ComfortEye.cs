@@ -693,6 +693,12 @@ namespace ComfortEye
             var pA      = _layerA.LayerEnabled ? _layerA.Snapshot() : new LayerParams(0, 0, 0);
             var pB      = _layerB.LayerEnabled ? _layerB.Snapshot() : new LayerParams(0, 0, 0);
             var bounds  = _overlay.Bounds;
+            if (bounds != Screen.PrimaryScreen.Bounds)
+            {
+                _overlay.Bounds = Screen.PrimaryScreen.Bounds;
+                bounds = _overlay.Bounds;
+            }
+
             int frame   = ++_frameNo;
             var t0      = DateTime.Now;
 

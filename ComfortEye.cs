@@ -589,12 +589,12 @@ namespace ComfortEye
             const int PAD = 8;
 
             // ── Layer A (left) ─────────────────────────────────
-            _layerA = new LayerPanel("Left Eye", Color.FromArgb(80, 180, 255), -1, 1, 12);
+            _layerA = new LayerPanel("Left Eye", Color.Orange, -1, 1, 12);
             _layerA.Location = new Point(PAD, PAD);
             Controls.Add(_layerA);
 
             // ── Layer B (right) ────────────────────────────────
-            _layerB = new LayerPanel("Right Eye", Color.FromArgb(80, 180, 255), 1, -1, 12);
+            _layerB = new LayerPanel("Right Eye", Color.Orange, 1, -1, 12);
             _layerB.Location = new Point(PAD + _layerA.Width + PAD, PAD);
             Controls.Add(_layerB);
 
@@ -604,7 +604,7 @@ namespace ComfortEye
             // ── HUD opacity slider ─────────────────────────────
             Controls.Add(new Label
             {
-                Text = "HUD opacity:", Location = new Point(PAD, topY),
+                Text = "HUD Opacity:", Location = new Point(PAD, topY),
                 AutoSize = true, ForeColor = Color.FromArgb(160, 160, 160),
                 BackColor = Color.Transparent,
             });

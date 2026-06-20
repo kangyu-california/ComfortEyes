@@ -9,7 +9,12 @@
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <AssemblyName>ComfortEye</AssemblyName>
     <RootNamespace>ComfortEye</RootNamespace>
+    <ApplicationIcon>ComfortEye.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="ComfortEye.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Drawing.Common" Version="8.0.0" />

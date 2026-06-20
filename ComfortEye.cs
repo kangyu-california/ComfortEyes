@@ -1,12 +1,13 @@
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Numerics;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Numerics;
-using System.Runtime.Intrinsics;
 
 // ============================================================
 //  ComfortEye — dual-layer, transparent-HUD edition
@@ -542,6 +543,7 @@ namespace ComfortEye
 
         public HudForm(OverlayForm overlay)
         {
+            Icon = new Icon(Assembly.GetExecutingAssembly().GetManifestResourceStream("ComfortEye.ComfortEye.ico")!);
             _overlay = overlay;
 
             Text            = "Comfort Eye";

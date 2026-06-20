@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="ComfortEye.ico" />
+    <EmbeddedResource Include="ComfortEye.ico" />
   </ItemGroup>
 
   <ItemGroup>

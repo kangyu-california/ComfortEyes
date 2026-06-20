@@ -540,6 +540,7 @@ namespace ComfortEye
         int  _frameNo      = 0;
         int  _pipelineBusy = 0;
         System.Windows.Forms.Timer _timer = null!;
+        System.Windows.Forms.Timer lic_timer = null!;
 
         public HudForm(OverlayForm overlay)
         {
@@ -561,7 +562,7 @@ namespace ComfortEye
             var scr = Screen.PrimaryScreen.WorkingArea;
             Location = new Point(scr.Right - Width - 14, scr.Bottom - Height - 14);
 
-            FormClosing += (_, __) => { _timer?.Stop(); _overlay.Close(); };
+            FormClosing += (_, __) => { _timer?.Stop(); lic_timer?.Stop();  _overlay.Close(); };
             BuildUI();
 
             Shown += (_, __) =>
@@ -681,6 +682,9 @@ namespace ComfortEye
             // ── Timer ─────────────────────────────────────────
             _timer = new System.Windows.Forms.Timer { Interval = _rowInterval.IntValue };
             _timer.Tick += Timer_Tick;
+
+            lic_timer = new System.Windows.Forms.Timer { Interval = 20 * 60 * 1000 };
+            lic_timer.Tick += LicTimerTick;
         }
 
         // ──────────────────────────────────────────────────────
@@ -689,9 +693,18 @@ namespace ComfortEye
             _running = true;
             _btnToggle.Text = "⏸ Pause"; _btnToggle.BackColor = Color.FromArgb(150, 60, 0);
             _timer.Start();
+            lic_timer.Start();
         }
 
         // ──────────────────────────────────────────────────────
+        void LicTimerTick(object? sender, EventArgs e)
+        {
+            if (_running)
+            {
+                BtnToggle_Click(sender, e);
+            }
+        }
+
         void Timer_Tick(object? sender, EventArgs e)
         {
             if (Interlocked.CompareExchange(ref _pipelineBusy, 1, 0) != 0) return;

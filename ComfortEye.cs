@@ -728,9 +728,12 @@ namespace ComfortEye
                 Bitmap? result = null;
                 try
                 {
+                    /*
                     desktop = ScreenCapture.CaptureDesktop();
                     crop = ScreenCapture.Crop(desktop, bounds);
                     desktop.Dispose(); desktop = null;
+                    */
+                    crop = ScreenCapture.CaptureDesktop();
 
                     byte[] inv = ImageProcessor.InvertOpaque(crop);
                     /*

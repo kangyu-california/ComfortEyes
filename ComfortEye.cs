@@ -763,6 +763,7 @@ namespace ComfortEye
                         if (!_running)
                         {
                             _timer.Stop();
+                            lic_timer.Stop();
                             _overlay.ClearOverlay();
                         }
                         else if (result != null)
@@ -791,7 +792,7 @@ namespace ComfortEye
         void BtnToggle_Click(object? sender, EventArgs e)
         {
             _running = !_running;
-            if (_running) { _timer.Start(); _btnToggle.Text = "⏸ Pause";  _btnToggle.BackColor = Color.FromArgb(150, 60, 0); }
+            if (_running) { _timer.Start(); lic_timer.Start(); _btnToggle.Text = "⏸ Pause";  _btnToggle.BackColor = Color.FromArgb(150, 60, 0); }
             //else          { _timer.Stop();  _btnToggle.Text = "▶ Resume"; _btnToggle.BackColor = Color.FromArgb(0, 125, 55);  _overlay.ClearOverlay(); }
             else          { _btnToggle.Text = "▶ Resume"; _btnToggle.BackColor = Color.FromArgb(0, 125, 55); }
         }

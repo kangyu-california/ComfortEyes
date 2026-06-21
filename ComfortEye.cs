@@ -544,7 +544,8 @@ namespace ComfortEye
 
         public HudForm(OverlayForm overlay)
         {
-            Icon = new Icon(Assembly.GetExecutingAssembly().GetManifestResourceStream("ComfortEye.ComfortEye.ico")!);
+            //Icon = new Icon(Assembly.GetExecutingAssembly().GetManifestResourceStream("ComfortEye.ComfortEye.ico")!);
+            Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
             _overlay = overlay;
 
             Text            = "Comfort Eye";

@@ -24,7 +24,7 @@ using System.Windows.Forms;
 //  OverlayForm remains WS_EX_TRANSPARENT so input passes through.
 // ============================================================
 
-namespace ComfortEye
+namespace ComfortEyes
 {
     // ══════════════════════════════════════════════════════════
     //  Win32

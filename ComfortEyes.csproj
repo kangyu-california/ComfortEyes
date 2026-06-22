@@ -7,8 +7,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
-    <AssemblyName>ComfortEye</AssemblyName>
-    <RootNamespace>ComfortEye</RootNamespace>
+    <AssemblyName>ComfortEyes</AssemblyName>
+    <RootNamespace>ComfortEyes</RootNamespace>
     <ApplicationIcon>ComfortEye.ico</ApplicationIcon>
   </PropertyGroup>
 

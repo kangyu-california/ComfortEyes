@@ -548,7 +548,7 @@ namespace ComfortEyes
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
             _overlay = overlay;
 
-            Text            = "Comfort Eye";
+            Text            = "ComfortEyes";
             //FormBorderStyle = FormBorderStyle.SizableToolWindow;
             FormBorderStyle = FormBorderStyle.Sizable;
             MaximizeBox = false;

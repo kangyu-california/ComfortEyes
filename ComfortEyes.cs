@@ -684,7 +684,7 @@ namespace ComfortEyes
             _timer = new System.Windows.Forms.Timer { Interval = _rowInterval.IntValue };
             _timer.Tick += Timer_Tick;
 
-            lic_timer = new System.Windows.Forms.Timer { Interval = 20 * 60 * 1000 };
+            lic_timer = new System.Windows.Forms.Timer { Interval = 45 * 60 * 1000 };
             lic_timer.Tick += LicTimerTick;
         }
 

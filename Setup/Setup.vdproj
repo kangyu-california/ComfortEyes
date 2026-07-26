@@ -15,7 +15,7 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_5452A4539EFD460B9FABC01803DF8B80"
+        "MsmKey" = "8:_420FFC7025ED41658298275AA6E9DD33"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -44,6 +44,14 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
             }
         }
         "Release"
@@ -165,7 +173,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:ComfortEyes"
         "ProductCode" = "8:{CAB3BC0B-626F-4224-B5AB-85E768E80294}"
-        "PackageCode" = "8:{22F48EB8-DC82-4FD6-A8D4-281D1F8509C6}"
+        "PackageCode" = "8:{2147AE1C-02DE-4C0D-9EDB-93BE1D3F16B8}"
         "UpgradeCode" = "8:{259A5E92-9AC8-4B92-B365-50A5EB218CCB}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
@@ -285,15 +293,15 @@
         }
         "Shortcut"
         {
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_3B9893294EB44CA8AFBCE277E37AF8A2"
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_88E1C3BD0E3D48FFB1CD3A2FB87A24F1"
             {
-            "Name" = "8:ComfortEyes (Active)"
+            "Name" = "8:ComfortEyes"
             "Arguments" = "8:"
             "Description" = "8:"
             "ShowCmd" = "3:1"
             "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
-            "Target" = "8:_5452A4539EFD460B9FABC01803DF8B80"
+            "Target" = "8:_420FFC7025ED41658298275AA6E9DD33"
             "Folder" = "8:_50C87D7C3EC34BECA6FB2961A91490F7"
             "WorkingFolder" = "8:_2BBDA4B820524327BDD2CEF9EA9E1015"
             "Icon" = "8:"
@@ -698,7 +706,7 @@
         }
         "ProjectOutput"
         {
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_5452A4539EFD460B9FABC01803DF8B80"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_420FFC7025ED41658298275AA6E9DD33"
             {
             "SourcePath" = "8:..\\obj\\Release\\net8.0-windows\\apphost.exe"
             "TargetName" = "8:"

@@ -597,12 +597,12 @@ namespace ComfortEyes
             const int PAD = 8;
 
             // ── Layer A (left) ─────────────────────────────────
-            _layerA = new LayerPanel("Left Eye", Color.Orange, -1, 1, 12);
+            _layerA = new LayerPanel("Left Eye", Color.Orange, -1, 1, 5);
             _layerA.Location = new Point(PAD, PAD);
             Controls.Add(_layerA);
 
             // ── Layer B (right) ────────────────────────────────
-            _layerB = new LayerPanel("Right Eye", Color.Orange, 1, -1, 12);
+            _layerB = new LayerPanel("Right Eye", Color.Orange, 1, -1, 5);
             _layerB.Location = new Point(PAD + _layerA.Width + PAD, PAD);
             Controls.Add(_layerB);
 

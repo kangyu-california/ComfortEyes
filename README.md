@@ -1,5 +1,7 @@
 ComfortEyes is a lightweight Windows screen overlay application designed to reduce eye strain during extended computer uses. It works by applying two customizable image filters (one for each eye) over the entire desktop, making fonts crisp and easier to read at a glance, giving your display the calm, paper-like quality of an e-ink screen. The result is a more comfortable viewing experience that reduces glare and eye fatigue.
 
+<img width="601" height="312" alt="ComfortEyes" src="https://github.com/user-attachments/assets/9c851f84-076a-4fc2-9ec7-764a2af5b718" />
+
 Image Filter Settings:
 
 * X Shift / Y Shift (in pixels)
